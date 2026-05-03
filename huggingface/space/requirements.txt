@@ -1,0 +1,7 @@
+# HuggingFace Space requirements.
+# Pinned conservatively — the Space rebuilds on every push, so we want
+# reproducibility, not bleeding edge.
+
+bulwark-agent-security>=0.1.0
+streamlit>=1.32,<2.0
+pandas>=2.0,<3.0
