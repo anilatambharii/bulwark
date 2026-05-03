@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: mailto:security@bulwark.dev
+    about: Use email for security issues — do NOT open a public issue.
+  - name: Discussion / RFC
+    url: https://github.com/bulwark-security/bulwark/discussions
+    about: For design questions, feature requests, and open-ended discussion.

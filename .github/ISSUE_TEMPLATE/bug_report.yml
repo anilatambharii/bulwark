@@ -1,0 +1,57 @@
+name: Bug report
+description: Report a defect in Bulwark.
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping make Bulwark better.
+
+        **If this is a security vulnerability, do NOT file a public issue.**
+        Email security@bulwark.dev — see [SECURITY.md](../SECURITY.md).
+  - type: input
+    id: version
+    attributes:
+      label: Bulwark version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: "3.12.1"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS / platform
+      placeholder: "Ubuntu 24.04 / macOS 14.4 / Windows 11"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: Smallest snippet that triggers the bug.
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: traceback
+    attributes:
+      label: Stack trace
+      render: text

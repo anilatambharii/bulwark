@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      runtime:
+        patterns: ["pydantic", "cryptography", "httpx", "python-jose"]
+      dev:
+        patterns: ["pytest*", "black", "ruff", "mypy", "pre-commit"]
+      ml:
+        patterns: ["transformers", "torch", "numpy"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"

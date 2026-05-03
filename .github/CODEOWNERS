@@ -1,0 +1,8 @@
+# Bulwark CODEOWNERS — every PR needs at least one core-team review.
+
+*                       @bulwark-security/core
+/bulwark/core/          @bulwark-security/core @bulwark-security/security
+/bulwark/integrations/  @bulwark-security/core
+/docs/COMPLIANCE.md     @bulwark-security/security @bulwark-security/compliance
+/SECURITY.md            @bulwark-security/security
+/.github/workflows/     @bulwark-security/core
