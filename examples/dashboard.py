@@ -305,7 +305,7 @@ def _render_audit_browser(audit: AuditTrail) -> None:
     summary_cols[3].metric("Denied (RBAC)", int((df["decision"] == "denied").sum()))
     summary_cols[4].metric("Escalated", int((df["decision"] == "escalated").sum()))
 
-    st.dataframe(df, width="stretch", hide_index=True)
+    st.dataframe(df, use_container_width=True, hide_index=True)
 
     st.markdown("### Inspect entry")
     selected_id = st.selectbox(

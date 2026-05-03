@@ -8,7 +8,7 @@ sdk_version: 1.32.0
 app_file: app.py
 pinned: true
 license: apache-2.0
-short_description: Live demo of the Bulwark agent-security pipeline (sanitizer + injection detector + RBAC + audit + human gate).
+short_description: Live demo of Bulwark - AI agent security pipeline.
 tags:
   - ai-security
   - prompt-injection
@@ -19,7 +19,7 @@ tags:
   - hipaa
   - soc2
 models:
-  - bulwark-security/injection-classifier
+  - AmbhariiLabs/injection-classifier
 datasets:
   - deepset/prompt-injections
 ---

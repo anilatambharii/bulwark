@@ -45,7 +45,7 @@ catalog cannot anticipate.
 from bulwark.core.detector import DetectorConfig, InjectionDetector
 
 detector = InjectionDetector(DetectorConfig(
-    model_path="bulwark-security/injection-classifier",
+    model_path="AmbhariiLabs/injection-classifier",
     enable_ml=True,
     threshold=0.7,
 ))
