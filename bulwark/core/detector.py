@@ -1,13 +1,20 @@
-"""Layer 2 — Injection Detector (ML classifier + pattern matching).
+"""Layer 2 — Injection Detector (pattern matching + optional transformer classifier).
 
 The detector returns a single normalized risk score and the list of patterns
-that contributed to it. ML scoring is *additive* on top of pattern matching:
-when a fine-tuned classifier is available it adds discrimination on novel
-phrasings the regex catalog cannot anticipate. When it is not available,
-the detector still operates — the framework degrades gracefully.
+that contributed to it.
 
-Performance target: < 50 ms / call without ML; < 200 ms / call with a
-distilled BERT-class classifier on CPU.
+Default mode — pattern-only: a curated catalog of 23+ regex signatures with
+severity weights. No external dependencies, deterministic, < 5 ms per call.
+
+Optional ML mode (``enable_ml=True``, requires ``pip install bulwark-agent-security[ml]``):
+loads ``protectai/deberta-v3-base-prompt-injection-v2`` from HuggingFace Hub —
+a DeBERTa-v3 model fine-tuned specifically for prompt injection detection.
+ML scoring is *additive*: it adds recall on novel phrasings the regex catalog
+cannot anticipate while the pattern phase provides the auditable, deterministic
+baseline. When the model is unavailable the detector continues operating with
+pattern-only scoring; absence is not a fatal error.
+
+Performance: < 5 ms without ML; < 200 ms with the transformer on CPU.
 """
 
 from __future__ import annotations
@@ -24,8 +31,12 @@ class DetectorConfig(BaseModel):
     """Configuration for :class:`InjectionDetector`."""
 
     model_path: str = Field(
-        default="bulwark/models/injection_classifier",
-        description="Path to a fine-tuned HF classifier directory (optional).",
+        default="protectai/deberta-v3-base-prompt-injection-v2",
+        description=(
+            "HuggingFace model ID or local path for the transformer classifier. "
+            "Defaults to protectai/deberta-v3-base-prompt-injection-v2, a DeBERTa-v3 "
+            "model fine-tuned for prompt injection detection. Only used when enable_ml=True."
+        ),
     )
     threshold: float = Field(
         default=0.7,
@@ -69,15 +80,18 @@ class DetectionResult(BaseModel):
 class InjectionDetector:
     """Two-phase injection detector.
 
-    Phase 1 — *ML classifier*: a fine-tuned BERT-class model produces a
-    real-valued injection probability when ``enable_ml=True`` and the
-    transformers extra is installed.
-
-    Phase 2 — *Pattern catalog*: deterministic regex matches against the
+    Phase 1 — *Pattern catalog*: deterministic regex matches against the
     curated catalog in :mod:`bulwark.utils.patterns`. Cheap, transparent,
-    and always available.
+    and always active. This is the only phase that runs by default.
 
-    Final score combines both signals with configurable weights.
+    Phase 2 — *Transformer classifier* (optional): when ``enable_ml=True``
+    and the ``[ml]`` extra is installed, loads
+    ``protectai/deberta-v3-base-prompt-injection-v2`` from HuggingFace Hub.
+    Adds recall on paraphrased attacks the pattern catalog hasn't seen.
+    Falls back silently if the model cannot be loaded.
+
+    Final score combines both signals with configurable weights; when only
+    pattern matching is active the pattern score is the final score.
     """
 
     def __init__(self, config: DetectorConfig | None = None) -> None:
@@ -205,8 +219,12 @@ class InjectionDetector:
             entry = result[0] if isinstance(result, list) else result
             label = str(entry.get("label", "")).lower()
             score = float(entry.get("score", 0.0))
+            # Injection labels: protectai model uses "INJECTION"; others use label_1/positive/unsafe
             if any(tag in label for tag in ("inject", "unsafe", "malicious", "label_1", "positive")):
                 return score
-            return 1.0 - score if "safe" in label or "label_0" in label else 0.0
+            # Safe labels: protectai model uses "LEGIT"; others use safe/label_0/benign/clean
+            if any(tag in label for tag in ("legit", "safe", "label_0", "benign", "clean")):
+                return 1.0 - score
+            return 0.0
         except Exception:
             return 0.0

@@ -12,7 +12,7 @@ input ──▶│ 1 Sanitize   │──┐    (zero-permission isolate)
         └──────────────┘  │
                           ▼
                    ┌──────────────┐
-                   │ 2 Detect     │   (ML + regex)
+                   │ 2 Detect     │   (patterns + opt. transformer)
                    └──────────────┘
                           │
                           ▼
@@ -78,28 +78,48 @@ unprivileged thing (the sanitizer).
 
 **File:** [`bulwark/core/detector.py`](../bulwark/core/detector.py)
 
-Returns a `DetectionResult` with a normalized score in `[0, 1]`. Two
-phases run in parallel:
+Returns a `DetectionResult` with a normalized score in `[0, 1]`.
 
-* **Pattern phase** — deterministic regex catalog
-  ([`bulwark/utils/patterns.py`](../bulwark/utils/patterns.py)). Cheap,
-  transparent, always available. Each pattern carries a `severity` (LOW,
-  MEDIUM, HIGH, CRITICAL); the combiner picks the highest hit and adds a
-  small bonus per additional hit.
-* **ML phase** — fine-tuned BERT-class classifier (optional). Adds
-  recall on novel phrasings. Loaded lazily; absence is not a fatal error.
+### Phase 1 — Pattern catalog (always active)
 
-The two scores combine with configurable weights. If either is at
-extreme confidence (`>= 0.85` for pattern, `>= 0.95` for ML) the combined
-score is a max() rather than a blend — strong signal wins.
+A deterministic regex catalog
+([`bulwark/utils/patterns.py`](../bulwark/utils/patterns.py)) of 22 curated
+attack signatures. Each pattern carries a `severity` (LOW, MEDIUM, HIGH,
+CRITICAL); the combiner picks the highest hit and adds a small bonus per
+additional match. Runs in < 5 ms with no external dependencies.
+
+Categories covered: role-marker overrides, jailbreak directives, system prompt
+extraction, virtualization/roleplay jailbreaks, special token injection,
+credential phishing, data-exfiltration via markdown/image links, memory
+poisoning, indirect tool invocation, and context-window overflow attacks.
+
+### Phase 2 — Transformer classifier (optional)
+
+Activated with `DetectorConfig(enable_ml=True)` plus
+`pip install bulwark-agent-security[ml]`.
+
+Loads [`protectai/deberta-v3-base-prompt-injection-v2`](https://huggingface.co/protectai/deberta-v3-base-prompt-injection-v2)
+from HuggingFace Hub — a DeBERTa-v3-base model fine-tuned specifically for
+prompt injection detection. Adds recall on paraphrased attacks the pattern
+catalog hasn't seen. Loaded lazily; if the model cannot be fetched the
+detector silently continues with pattern-only scoring.
+
+The two scores combine with configurable weights (`ml_weight`, `pattern_weight`).
+If either signal reaches extreme confidence (`>= 0.85` pattern or `>= 0.95`
+ML) the combined score is `max()` rather than a blend — strong signal wins.
 
 ### Why both?
 
 Patterns are auditable: a security engineer can read the catalog and
-understand exactly what gets blocked. ML adds reach for paraphrased attacks
-that the catalog hasn't seen. Together they neutralize each other's failure
-modes — a regex-only system is brittle against rewording, an ML-only system
-is a black box that auditors will not accept.
+understand exactly what gets blocked. The transformer adds reach for
+paraphrased attacks the catalog hasn't seen. Together they neutralize each
+other's failure modes — a regex-only detector is brittle against rewording;
+an ML-only detector is a black box that auditors will not accept.
+
+The key design choice: **the pattern phase is the default and the guaranteed
+baseline**. You get deterministic, explainable security out of the box; you
+opt into the transformer when you need the extra coverage and can accept the
+additional dependency.
 
 ## Layer 3 — Compartmentalized RBAC
 

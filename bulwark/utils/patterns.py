@@ -160,6 +160,71 @@ ATTACK_PATTERNS: Final[tuple[AttackPattern, ...]] = (
         ),
         severity=PatternSeverity.CRITICAL,
     ),
+    AttackPattern(
+        name="prompt_leak_directive",
+        description="Attempts to extract the model's system prompt or hidden instructions.",
+        regex=_compile(
+            r"\b(?:repeat|output|print|show|display|tell\s+me|share)\b[^.\n]{0,50}"
+            r"\b(?:system\s+prompt|hidden\s+instructions?|initial\s+prompt|"
+            r"your\s+instructions?|your\s+rules?|your\s+context)\b"
+        ),
+        severity=PatternSeverity.HIGH,
+    ),
+    AttackPattern(
+        name="virtualization_jailbreak",
+        description="Roleplay / persona framing to bypass policy (DAN-style).",
+        regex=_compile(
+            r"\b(?:pretend|imagine|roleplay|act\s+as|you\s+are\s+now|"
+            r"simulate|behave\s+as|you\s+have\s+no\s+restrictions?|"
+            r"without\s+(?:any\s+)?restrictions?|uncensored\s+mode)\b"
+        ),
+        severity=PatternSeverity.HIGH,
+    ),
+    AttackPattern(
+        name="memory_poisoning",
+        description="Instructions to persist hostile context across future sessions.",
+        regex=_compile(
+            r"\b(?:remember|store|save|memorize|record)\b[^.\n]{0,40}"
+            r"\b(?:(?:all\s+)?future\s+(?:sessions?|conversations?|chats?)|"
+            r"permanently|always\s+from\s+now)\b"
+        ),
+        severity=PatternSeverity.HIGH,
+    ),
+    AttackPattern(
+        name="special_token_injection",
+        description="LLM special / control tokens embedded in user-controlled text.",
+        regex=_compile(
+            r"(?:<\|(?:endoftext|im_start|im_end|system|pad|eos|bos|"
+            r"end_header_id|start_header_id)\|>|"
+            r"\[INST\]|\[/INST\]|\[SYS\]|\[/SYS\]|<s>|</s>)"
+        ),
+        severity=PatternSeverity.CRITICAL,
+    ),
+    AttackPattern(
+        name="indirect_tool_invocation",
+        description="Embedded directive attempting to invoke a specific tool or function by name.",
+        regex=_compile(
+            r"\b(?:call|invoke|execute|run|trigger|use)\b[^.\n]{0,30}"
+            r"\b(?:the\s+)?(?:tool|function|plugin|action|skill)\b[^.\n]{0,20}"
+            r"\b(?:with|using|and\s+pass)\b"
+        ),
+        severity=PatternSeverity.HIGH,
+    ),
+    AttackPattern(
+        name="markdown_exfil_link",
+        description="Markdown image/link with external URL and templated query params — classic data exfiltration via renderer.",
+        regex=_compile(
+            r"!?\[[^\]]{0,80}\]\(\s*https?://[^\s)]{10,}\?[^)]*"
+            r"(?:\{\{|\$\{|<%|%7B%7B|<\?)"
+        ),
+        severity=PatternSeverity.CRITICAL,
+    ),
+    AttackPattern(
+        name="context_window_overflow",
+        description="Extremely large repetitive padding block used to push instructions out of attention window.",
+        regex=re.compile(r"(.)\1{2000,}", re.DOTALL),
+        severity=PatternSeverity.MEDIUM,
+    ),
 )
 
 

@@ -37,12 +37,12 @@ Bulwark ships those five controls, designed together, so you don't have to.
                            ▼
                 ┌─────────────────────┐
    Layer 1      │  Input Sanitizer    │   zero-permission isolate
-                │  (dual-model)       │   strips HTML/Unicode/bidi
+                │                     │   strips HTML/Unicode/bidi
                 └──────────┬──────────┘
                            ▼
                 ┌─────────────────────┐
-   Layer 2      │  Injection Detector │   ML classifier + pattern
-                │  (BERT + regex)     │   catalog (defense in depth)
+   Layer 2      │  Injection Detector │   22 pattern signatures
+                │                     │   + opt. DeBERTa classifier
                 └──────────┬──────────┘
                            ▼
                 ┌─────────────────────┐
@@ -62,6 +62,20 @@ Bulwark ships those five controls, designed together, so you don't have to.
                            ▼
                   protected tool call
 ```
+
+### Layer 2 — Injection detection in depth
+
+**Default (pattern-based, no extra dependencies):** 22 curated regex signatures
+covering role-marker overrides, jailbreak directives, special token injection,
+prompt-leak attempts, data-exfiltration links, credential phishing, and more.
+Each pattern carries a severity weight (LOW → CRITICAL); the combiner produces
+a single `[0, 1]` risk score in under 5 ms.
+
+**Optional transformer layer** (`pip install bulwark-agent-security[ml]`):
+enables [`protectai/deberta-v3-base-prompt-injection-v2`](https://huggingface.co/protectai/deberta-v3-base-prompt-injection-v2) —
+a DeBERTa-v3 model fine-tuned specifically for prompt injection detection.
+Its score is blended with the pattern score with configurable weights.
+When the model cannot be loaded the detector falls back silently to patterns.
 
 ## Quickstart
 
