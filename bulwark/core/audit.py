@@ -12,7 +12,7 @@ S3/Postgres backend conforming to the same protocol.
 
 Compliance regimes (HIPAA, NERC CIP, SOC 2) require:
   * authenticated encryption at rest — ``Fernet`` (AES-128-CBC + HMAC-SHA256)
-  * tamper detection — Fernet token MAC + optional JWS signature chain
+  * tamper detection — Fernet token MAC (HMAC-SHA256)
   * 7-year retention default for HIPAA — configurable per profile
   * queryable forensic reconstruction — :meth:`AuditTrail.query`
 """
