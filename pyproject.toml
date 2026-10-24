@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "bulwark-agent-security"
 version = "0.2.0"
-description = "Enterprise-grade defense framework for AI agents — protects against prompt injection, data exfiltration, and memory contamination."
+description = "Defense framework for AI agents — protects against prompt injection, data exfiltration, and memory contamination."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
