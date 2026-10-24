@@ -7,8 +7,9 @@
 [![Coverage](https://img.shields.io/badge/coverage-90%25-brightgreen.svg)](https://github.com/bulwark-security/bulwark)
 [![Type Checked](https://img.shields.io/badge/typed-mypy_strict-2A6DB2.svg)](https://mypy-lang.org/)
 
-> **The defensive barrier for production AI agents.** Enterprise-grade,
-> vendor-neutral, MCP-native, HIPAA / SOC 2 / NERC CIP-ready.
+> **The defensive barrier for AI agents.** Vendor-neutral, MCP-native, with audit
+> controls mapped to HIPAA / SOC 2 / NERC CIP clauses. Certification depends on your
+> deployment and auditor; see [Compliance](docs/COMPLIANCE.md).
 
 ---
 
@@ -129,7 +130,7 @@ Full quickstart: [`examples/quickstart.py`](examples/quickstart.py).
 |---|---|---|---|
 | Vendor neutrality        | ✅ Anthropic / OpenAI / MCP / LangChain | ❌ tied to one provider | ⚠ depends |
 | MCP-native               | ✅ ships with MCP proxy   | ⚠ partial | ❌ |
-| Compliance evidence      | ✅ HIPAA / SOC 2 / NERC CIP / PCI / GDPR | ⚠ varies | ❌ build it yourself |
+| Compliance evidence      | ✅ Controls mapped to HIPAA / SOC 2 / NERC CIP / PCI / GDPR | ⚠ varies | ❌ build it yourself |
 | Encrypted audit out-of-the-box | ✅ Fernet + key rotation | ⚠ optional   | ❌ rolled per project |
 | Human-confirmation gates | ✅ async, multi-channel | ⚠ basic    | ❌ |
 | Type-checked, async      | ✅ mypy strict, async/await throughout | ⚠ varies | ⚠ |
